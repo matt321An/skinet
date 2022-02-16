@@ -1,0 +1,7 @@
+.fa{
+    color: blue;
+    &:hover{
+        color:black !important;
+        scale: 1.1 !important;
+    }
+}
