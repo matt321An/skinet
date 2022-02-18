@@ -1,4 +1,7 @@
+using Core.Entities.Identity;
 using Infrastructure.Data;
+using Infrastructure.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace API
@@ -16,13 +19,16 @@ namespace API
                 var loggerFactory = services.GetRequiredService<ILoggerFactory>();
                 try
                 {
+                    // We create the database for the store then seed it if it's empty
                     var context = services.GetRequiredService<StoreContext>();
-
-                    // Here we create the db
                     await context.Database.MigrateAsync();
-
-                    // Here we seed the data
                     await StoreContextSeed.SeedAsync(context, loggerFactory);
+
+                    // We create the database for the Microsoft Identity then seed it if it's empty
+                    var userManager = services.GetRequiredService<UserManager<AppUser>>();
+                    var identityContext = services.GetRequiredService<AppIdentityDbContext>();
+                    await identityContext.Database.MigrateAsync();
+                    await AppIdentityDbContextSeed.SeedUsersAsync(userManager);
                 }
                 catch (Exception ex)
                 {

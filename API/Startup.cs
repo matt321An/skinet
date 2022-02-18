@@ -2,6 +2,7 @@ using API.Extensions;
 using API.Helpers;
 using API.Middleware;
 using Infrastructure.Data;
+using Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
 using StackExchange.Redis;
 
@@ -25,6 +26,10 @@ namespace API
             services.AddDbContext<StoreContext>(x =>
                 x.UseSqlite(_config.GetConnectionString("DefaultConnection")));
 
+            // Add the dbContext regarding the db for Microsoft Identity
+            services.AddDbContext<AppIdentityDbContext>(x => 
+                x.UseSqlite(_config.GetConnectionString("IdentityConnection")));
+
             // Service to add Redis
             services.AddSingleton<IConnectionMultiplexer>(c => {
                 var configuration = ConfigurationOptions.Parse(_config.GetConnectionString("Redis"), true);
@@ -33,6 +38,9 @@ namespace API
 
             // Adds most of the services to the application
             services.AddApplicationServices();
+
+            // Here we add services regarding Microsoft Identity
+            services.AddIdentityServices(_config);
 
             services.AddSwaggerDocumentation();
 
@@ -63,6 +71,8 @@ namespace API
             app.UseStaticFiles();
 
             app.UseCors("CorsPolicy");
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 
